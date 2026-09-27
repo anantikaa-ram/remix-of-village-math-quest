@@ -117,7 +117,7 @@ function Results() {
       </div>
 
       <div className="mt-8 flex flex-wrap gap-3">
-        <button onClick={() => { saveStudent({ ...s, diagnostic: undefined }); nav({ to: "/diagnostic" }); }} className="rounded-lg border border-border px-5 py-2.5 text-sm font-medium">Retake diagnostic</button>
+        <button onClick={() => { const { diagnostic: _d, ...rest } = s; saveStudent(rest); nav({ to: "/diagnostic" }); }} className="rounded-lg border border-border px-5 py-2.5 text-sm font-medium">Retake diagnostic</button>
         <button onClick={() => { saveStudent(null); nav({ to: "/" }); }} className="rounded-lg px-5 py-2.5 text-sm font-medium text-muted-foreground">Sign out</button>
       </div>
     </Shell>

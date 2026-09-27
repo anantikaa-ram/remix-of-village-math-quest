@@ -37,7 +37,7 @@ function Diagnostic() {
   if (s === undefined) return <Shell><div /></Shell>;
   if (!s) return <Shell><p>Please <Link to="/onboarding" className="text-primary underline">create a profile</Link> first.</p></Shell>;
 
-  const q = qs[idx];
+  const q = qs[idx]!;
   const elapsed = Math.floor((Date.now() - start.current) / 1000);
   void tick;
 
