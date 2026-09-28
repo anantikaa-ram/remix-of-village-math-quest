@@ -13,6 +13,9 @@ export interface Student {
   coins: number;
   badges: string[];
   diagnostic?: { interactions: Interaction[]; completedAt: string };
+  /** Practice telemetry, same shape as diagnostic, used to update mastery. */
+  practice?: Interaction[];
+  lessonsDone?: Record<string, { best: number; runs: number; stars: number }>;
 }
 
 const KEY = "mathvillage.student";
