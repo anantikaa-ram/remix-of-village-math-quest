@@ -166,7 +166,7 @@ export const LESSONS: Lesson[] = [
     steps: ["Square both legs.", "Add them.", "Take the square root."],
     example: { problem: "Legs 5 and 12", solution: ["25 + 144 = 169", "√169 = 13"] },
     gen: () => {
-      const [a, b, c] = [[3, 4, 5], [5, 12, 13], [8, 15, 17], [7, 24, 25]][r(0, 3)]!, k = r(1, 3);
+      const [a, b, c] = ([[3, 4, 5], [5, 12, 13], [8, 15, 17], [7, 24, 25]] as const)[r(0, 3)]!, k = r(1, 3);
       return mc(`Right triangle legs ${a * k} and ${b * k}. Hypotenuse?`, c * k, [(a + b) * k, c * k + 1, b * k + 1], "a² + b² = c²", `${(a * k) ** 2} + ${(b * k) ** 2} = ${(c * k) ** 2}; √ = ${c * k}`);
     },
   },
