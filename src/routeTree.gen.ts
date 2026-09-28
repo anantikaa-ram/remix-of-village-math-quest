@@ -11,8 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DiagnosticRouteImport } from './routes/diagnostic'
+import { Route as LearnRouteImport } from './routes/learn'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ResultsRouteImport } from './routes/results'
+import { Route as LearnIndexRouteImport } from './routes/learn.index'
+import { Route as LearnSlugRouteImport } from './routes/learn.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,6 +25,11 @@ const IndexRoute = IndexRouteImport.update({
 const DiagnosticRoute = DiagnosticRouteImport.update({
   id: '/diagnostic',
   path: '/diagnostic',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LearnRoute = LearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -34,37 +42,72 @@ const ResultsRoute = ResultsRouteImport.update({
   path: '/results',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LearnIndexRoute = LearnIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LearnRoute,
+} as any)
+const LearnSlugRoute = LearnSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => LearnRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/learn': typeof LearnRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/results': typeof ResultsRoute
+  '/learn/$slug': typeof LearnSlugRoute
+  '/learn/': typeof LearnIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/diagnostic': typeof DiagnosticRoute
   '/onboarding': typeof OnboardingRoute
   '/results': typeof ResultsRoute
+  '/learn/$slug': typeof LearnSlugRoute
+  '/learn': typeof LearnIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/learn': typeof LearnRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/results': typeof ResultsRoute
+  '/learn/$slug': typeof LearnSlugRoute
+  '/learn/': typeof LearnIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/diagnostic' | '/onboarding' | '/results'
+  fullPaths:
+    | '/'
+    | '/diagnostic'
+    | '/learn'
+    | '/onboarding'
+    | '/results'
+    | '/learn/$slug'
+    | '/learn/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/diagnostic' | '/onboarding' | '/results'
-  id: '__root__' | '/' | '/diagnostic' | '/onboarding' | '/results'
+  to:
+    '/' | '/diagnostic' | '/onboarding' | '/results' | '/learn/$slug' | '/learn'
+  id:
+    | '__root__'
+    | '/'
+    | '/diagnostic'
+    | '/learn'
+    | '/onboarding'
+    | '/results'
+    | '/learn/$slug'
+    | '/learn/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DiagnosticRoute: typeof DiagnosticRoute
+  LearnRoute: typeof LearnRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   ResultsRoute: typeof ResultsRoute
 }
@@ -85,6 +128,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiagnosticRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/learn': {
+      id: '/learn'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof LearnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -99,12 +149,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResultsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/learn/': {
+      id: '/learn/'
+      path: '/'
+      fullPath: '/learn/'
+      preLoaderRoute: typeof LearnIndexRouteImport
+      parentRoute: typeof LearnRoute
+    }
+    '/learn/$slug': {
+      id: '/learn/$slug'
+      path: '/$slug'
+      fullPath: '/learn/$slug'
+      preLoaderRoute: typeof LearnSlugRouteImport
+      parentRoute: typeof LearnRoute
+    }
   }
 }
+
+interface LearnRouteChildren {
+  LearnSlugRoute: typeof LearnSlugRoute
+  LearnIndexRoute: typeof LearnIndexRoute
+}
+
+const LearnRouteChildren: LearnRouteChildren = {
+  LearnSlugRoute: LearnSlugRoute,
+  LearnIndexRoute: LearnIndexRoute,
+}
+
+const LearnRouteWithChildren = LearnRoute._addFileChildren(LearnRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DiagnosticRoute: DiagnosticRoute,
+  LearnRoute: LearnRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   ResultsRoute: ResultsRoute,
 }

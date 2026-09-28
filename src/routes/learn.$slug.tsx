@@ -38,6 +38,7 @@ function LessonPage() {
   const s = useStudent();
   const [phase, setPhase] = useState<"learn" | "practice" | "done">("learn");
   const [revealed, setRevealed] = useState(1);
+  const [result, setResult] = useState<Result | null>(null);
 
   const startDiff = useMemo<Difficulty>(() => {
     if (!s?.diagnostic) return "easy";
@@ -118,14 +119,9 @@ function LessonPage() {
     </Shell>
   );
 
-  // hoisted state holder
-  function setResult(v: Result) { resultRef.current = v; force((x) => x + 1); }
 }
 
 type Result = { correct: number; stars: number; xp: number; coins: number };
-const resultRef: { current: Result | null } = { current: null };
-let force: (f: (x: number) => number) => void = () => {};
-let result: Result | null = null;
 
 function Practice({ startDiff, onDone, lessonSlug }: { startDiff: Difficulty; onDone: (log: Interaction[]) => void; lessonSlug: string }) {
   const lesson = lessonBySlug(lessonSlug)!;
