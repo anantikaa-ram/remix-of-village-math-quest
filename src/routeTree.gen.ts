@@ -14,6 +14,7 @@ import { Route as DiagnosticRouteImport } from './routes/diagnostic'
 import { Route as LearnRouteImport } from './routes/learn'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ResultsRouteImport } from './routes/results'
+import { Route as VillageRouteImport } from './routes/village'
 import { Route as LearnIndexRouteImport } from './routes/learn.index'
 import { Route as LearnSlugRouteImport } from './routes/learn.$slug'
 
@@ -42,6 +43,11 @@ const ResultsRoute = ResultsRouteImport.update({
   path: '/results',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VillageRoute = VillageRouteImport.update({
+  id: '/village',
+  path: '/village',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LearnIndexRoute = LearnIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/learn': typeof LearnRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/results': typeof ResultsRoute
+  '/village': typeof VillageRoute
   '/learn/$slug': typeof LearnSlugRoute
   '/learn/': typeof LearnIndexRoute
 }
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/diagnostic': typeof DiagnosticRoute
   '/onboarding': typeof OnboardingRoute
   '/results': typeof ResultsRoute
+  '/village': typeof VillageRoute
   '/learn/$slug': typeof LearnSlugRoute
   '/learn': typeof LearnIndexRoute
 }
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/learn': typeof LearnRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/results': typeof ResultsRoute
+  '/village': typeof VillageRoute
   '/learn/$slug': typeof LearnSlugRoute
   '/learn/': typeof LearnIndexRoute
 }
@@ -88,11 +97,18 @@ export interface FileRouteTypes {
     | '/learn'
     | '/onboarding'
     | '/results'
+    | '/village'
     | '/learn/$slug'
     | '/learn/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/diagnostic' | '/onboarding' | '/results' | '/learn/$slug' | '/learn'
+    | '/'
+    | '/diagnostic'
+    | '/onboarding'
+    | '/results'
+    | '/village'
+    | '/learn/$slug'
+    | '/learn'
   id:
     | '__root__'
     | '/'
@@ -100,6 +116,7 @@ export interface FileRouteTypes {
     | '/learn'
     | '/onboarding'
     | '/results'
+    | '/village'
     | '/learn/$slug'
     | '/learn/'
   fileRoutesById: FileRoutesById
@@ -110,6 +127,7 @@ export interface RootRouteChildren {
   LearnRoute: typeof LearnRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   ResultsRoute: typeof ResultsRoute
+  VillageRoute: typeof VillageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -149,6 +167,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResultsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/village': {
+      id: '/village'
+      path: '/village'
+      fullPath: '/village'
+      preLoaderRoute: typeof VillageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/learn/': {
       id: '/learn/'
       path: '/'
@@ -184,6 +209,7 @@ const rootRouteChildren: RootRouteChildren = {
   LearnRoute: LearnRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   ResultsRoute: ResultsRoute,
+  VillageRoute: VillageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

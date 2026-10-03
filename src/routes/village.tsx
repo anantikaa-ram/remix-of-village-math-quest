@@ -4,7 +4,6 @@ import { Shell } from "@/components/Shell";
 import { saveStudent, useStudent } from "@/lib/store";
 import { analyse } from "@/lib/ml";
 import { DOMAINS } from "@/lib/questions";
-import { lessonByTopic } from "@/lib/curriculum";
 import { GRID_H, GRID_W, STRUCTURES, structureById, type Structure } from "@/lib/village";
 
 export const Route = createFileRoute("/village")({
@@ -89,7 +88,7 @@ function Village() {
               <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{d.glyph} {d.building}</p>
               <div className="space-y-2">
                 {STRUCTURES.filter((st) => st.domain === d.id).map((st) => {
-                  const ok = unlocked(st), m = Math.round((mastery.get(st.topic) ?? 0) * 100), l = lessonByTopic(st.topic);
+                  const ok = unlocked(st), m = Math.round((mastery.get(st.topic) ?? 0) * 100);
                   return (
                     <button key={st.id} disabled={!ok} onClick={() => setSel(st.id)}
                       className={`flex w-full items-center gap-3 rounded-xl border-2 p-2.5 text-left transition ${sel === st.id ? "border-primary bg-accent/50" : "border-border"} ${ok ? "hover:border-primary/50" : "opacity-60"}`}>
@@ -101,7 +100,6 @@ function Village() {
                         </span>
                       </span>
                       <span className={`text-sm font-bold ${s.coins >= st.cost ? "" : "text-destructive"}`}>{st.cost}🪙</span>
-                      {!ok && l && <Link to="/learn/$slug" params={{ slug: l.slug }} onClick={(e) => e.stopPropagation()} className="text-xs font-medium text-primary">Learn</Link>}
                     </button>
                   );
                 })}
