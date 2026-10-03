@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DiagnosticRouteImport } from './routes/diagnostic'
 import { Route as LearnRouteImport } from './routes/learn'
+import { Route as ModelRouteImport } from './routes/model'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as VillageRouteImport } from './routes/village'
@@ -31,6 +32,11 @@ const DiagnosticRoute = DiagnosticRouteImport.update({
 const LearnRoute = LearnRouteImport.update({
   id: '/learn',
   path: '/learn',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModelRoute = ModelRouteImport.update({
+  id: '/model',
+  path: '/model',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/diagnostic': typeof DiagnosticRoute
   '/learn': typeof LearnRouteWithChildren
+  '/model': typeof ModelRoute
   '/onboarding': typeof OnboardingRoute
   '/results': typeof ResultsRoute
   '/village': typeof VillageRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/diagnostic': typeof DiagnosticRoute
+  '/model': typeof ModelRoute
   '/onboarding': typeof OnboardingRoute
   '/results': typeof ResultsRoute
   '/village': typeof VillageRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/diagnostic': typeof DiagnosticRoute
   '/learn': typeof LearnRouteWithChildren
+  '/model': typeof ModelRoute
   '/onboarding': typeof OnboardingRoute
   '/results': typeof ResultsRoute
   '/village': typeof VillageRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
     | '/'
     | '/diagnostic'
     | '/learn'
+    | '/model'
     | '/onboarding'
     | '/results'
     | '/village'
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/diagnostic'
+    | '/model'
     | '/onboarding'
     | '/results'
     | '/village'
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
     | '/'
     | '/diagnostic'
     | '/learn'
+    | '/model'
     | '/onboarding'
     | '/results'
     | '/village'
@@ -125,6 +137,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DiagnosticRoute: typeof DiagnosticRoute
   LearnRoute: typeof LearnRouteWithChildren
+  ModelRoute: typeof ModelRoute
   OnboardingRoute: typeof OnboardingRoute
   ResultsRoute: typeof ResultsRoute
   VillageRoute: typeof VillageRoute
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       path: '/learn'
       fullPath: '/learn'
       preLoaderRoute: typeof LearnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/model': {
+      id: '/model'
+      path: '/model'
+      fullPath: '/model'
+      preLoaderRoute: typeof ModelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -207,6 +227,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DiagnosticRoute: DiagnosticRoute,
   LearnRoute: LearnRouteWithChildren,
+  ModelRoute: ModelRoute,
   OnboardingRoute: OnboardingRoute,
   ResultsRoute: ResultsRoute,
   VillageRoute: VillageRoute,

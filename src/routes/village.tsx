@@ -27,7 +27,7 @@ function Village() {
   const mastery = useMemo(() => {
     const all = [...(s?.diagnostic?.interactions ?? []), ...(s?.practice ?? [])];
     const m = new Map<string, number>();
-    if (all.length) for (const t of analyse(all).topics) m.set(t.topic, t.mastery);
+    if (all.length) for (const t of analyse(all, s?.diagnostic?.interactions ?? []).topics) m.set(t.topic, t.mastery);
     return m;
   }, [s]);
 

@@ -23,7 +23,7 @@ function Results() {
   const s = useStudent();
   const nav = useNavigate();
   const inter = s?.diagnostic?.interactions;
-  const a = useMemo(() => (inter ? analyse(inter) : null), [inter]);
+  const a = useMemo(() => (inter ? analyse([...inter, ...(s?.practice ?? [])], inter) : null), [inter]);
   if (s === undefined) return <Shell><div /></Shell>;
   if (!s || !a || !inter) return <Shell><p>No diagnostic yet. <Link to={s ? "/diagnostic" : "/onboarding"} className="text-primary underline">Start here</Link>.</p></Shell>;
 
@@ -76,7 +76,7 @@ function Results() {
       <div className="mt-10 grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-border bg-card p-6">
           <h2 className="font-display text-xl font-semibold">Topic predictions</h2>
-          <p className="mb-4 text-xs text-muted-foreground">Mastery estimate · P(correct on next medium item) · struggle risk</p>
+          <p className="mb-4 text-xs text-muted-foreground">Mastery estimate · P(correct) and struggle risk from the trained model</p>
           <table className="w-full text-sm">
             <thead className="text-left text-xs text-muted-foreground"><tr><th className="pb-2">Topic</th><th>Mastery</th><th>P(correct)</th><th>Risk</th></tr></thead>
             <tbody>

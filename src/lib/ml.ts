@@ -1,4 +1,5 @@
 import type { Difficulty, DomainId, Question } from "./questions";
+import { featuresFor, predictStruggle } from "./struggle";
 
 /** One telemetry event per diagnostic item. */
 export interface Interaction {
@@ -48,8 +49,11 @@ function evidence(i: Interaction) {
   return sigmoid(z);
 }
 
-/** Bayesian-style mastery with a 0.5 prior (weight 1), IRT-like prediction. */
-export function analyse(interactions: Interaction[]) {
+/**
+ * Mastery = Bayesian-style evidence average; risk = trained logistic-regression
+ * struggle model (see struggle.ts / scripts/train_model.py) on a medium item.
+ */
+export function analyse(interactions: Interaction[], diagnostic: Interaction[] = interactions) {
   const byTopic = new Map<string, Interaction[]>();
   for (const i of interactions) {
     const k = `${i.domain}::${i.topic}`;
@@ -60,9 +64,8 @@ export function analyse(interactions: Interaction[]) {
     const sum = list.reduce((s, i) => s + evidence(i) * (1 + 0.3 * DIFF_W[i.difficulty] + 0.3), 0);
     const w = list.reduce((s, i) => s + (1 + 0.3 * DIFF_W[i.difficulty] + 0.3), 0);
     const mastery = (0.5 + sum) / (1 + w);
-    const theta = Math.log(mastery / (1 - mastery));
-    const pCorrectNext = sigmoid(1.4 * theta); // item difficulty b=0 (medium)
-    return { topic, domain, mastery, pCorrectNext, risk: 1 - pCorrectNext, n: list.length };
+    const risk = predictStruggle(featuresFor(interactions, diagnostic, topic, "medium")).p;
+    return { topic, domain, mastery, pCorrectNext: 1 - risk, risk, n: list.length };
   });
 
   const domainIds = [...new Set(interactions.map((i) => i.domain))];
@@ -94,17 +97,17 @@ export interface PathStep {
   reason: string;
 }
 
-/** Recommendation engine: prioritise highest struggle risk, pick difficulty from mastery. */
+/** Recommendation engine: order by ML-predicted struggle risk, pick action from mastery. */
 export function recommendPath(a: Analysis): PathStep[] {
   return [...a.topics]
-    .sort((x, y) => y.risk - x.risk)
+    .sort((x, y) => (y.risk + 1 - y.mastery) - (x.risk + 1 - x.mastery)) // blend ML risk with observed mastery
     .map((t) => {
       const pct = Math.round(t.mastery * 100);
       if (t.mastery < 0.45)
-        return { topic: t.topic, domain: t.domain, action: "Remediate", difficulty: "easy", reason: `Mastery ${pct}% — rebuild foundations with guided lessons.` };
+        return { topic: t.topic, domain: t.domain, action: "Remediate", difficulty: "easy", reason: `Mastery ${pct}% · model predicts ${Math.round(t.risk*100)}% struggle risk — rebuild foundations.` };
       if (t.mastery < 0.7)
-        return { topic: t.topic, domain: t.domain, action: "Practice", difficulty: "medium", reason: `Mastery ${pct}% — targeted practice to consolidate.` };
-      return { topic: t.topic, domain: t.domain, action: "Challenge", difficulty: "hard", reason: `Mastery ${pct}% — ready for stretch problems & boss battles.` };
+        return { topic: t.topic, domain: t.domain, action: "Practice", difficulty: "medium", reason: `Mastery ${pct}% · ${Math.round(t.risk*100)}% struggle risk — targeted practice.` };
+      return { topic: t.topic, domain: t.domain, action: "Challenge", difficulty: "hard", reason: `Mastery ${pct}% · ${Math.round(t.risk*100)}% struggle risk — ready for stretch problems.` };
     });
 }
 
