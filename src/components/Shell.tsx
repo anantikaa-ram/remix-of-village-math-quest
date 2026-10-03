@@ -14,6 +14,7 @@ export function Shell({ children }: { children: ReactNode }) {
           {s ? (
             <div className="flex items-center gap-4 text-sm">
               {s.diagnostic && <Link to="/learn" className="font-medium hover:text-primary" activeProps={{ className: "text-primary" }}>Learn</Link>}
+              {s.diagnostic && <Link to="/village" className="font-medium hover:text-primary" activeProps={{ className: "text-primary" }}>Village</Link>}
               {s.diagnostic && <Link to="/results" className="font-medium hover:text-primary" activeProps={{ className: "text-primary" }}>Profile</Link>}
               <span className="rounded-full bg-accent px-3 py-1 font-medium text-accent-foreground">⚡ {s.xp} XP</span>
               <span className="rounded-full bg-secondary px-3 py-1 font-medium text-secondary-foreground">🪙 {s.coins}</span>

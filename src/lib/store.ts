@@ -16,6 +16,8 @@ export interface Student {
   /** Practice telemetry, same shape as diagnostic, used to update mastery. */
   practice?: Interaction[];
   lessonsDone?: Record<string, { best: number; runs: number; stars: number }>;
+  /** Placed village structures on the grid. */
+  village?: { x: number; y: number; id: string }[];
 }
 
 const KEY = "mathvillage.student";
