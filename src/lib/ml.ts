@@ -100,7 +100,7 @@ export interface PathStep {
 /** Recommendation engine: order by ML-predicted struggle risk, pick action from mastery. */
 export function recommendPath(a: Analysis): PathStep[] {
   return [...a.topics]
-    .sort((x, y) => y.risk - x.risk)
+    .sort((x, y) => (y.risk + 1 - y.mastery) - (x.risk + 1 - x.mastery)) // blend ML risk with observed mastery
     .map((t) => {
       const pct = Math.round(t.mastery * 100);
       if (t.mastery < 0.45)
