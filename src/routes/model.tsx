@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Shell } from "@/components/Shell";
 import { useStudent } from "@/lib/store";
-import { analyse } from "@/lib/ml";
+import { analyse, recommendPath } from "@/lib/ml";
 import { FEATURE_LABEL, featuresFor, MODEL, predictStruggle } from "@/lib/struggle";
 
 export const Route = createFileRoute("/model")({
@@ -31,7 +31,7 @@ function ModelPage() {
   let explain: { topic: string; p: number; contrib: { name: string; value: number; logit: number }[] } | null = null;
   if (s?.diagnostic) {
     const hist = [...s.diagnostic.interactions, ...(s.practice ?? [])];
-    const top = [...analyse(hist, s.diagnostic.interactions).topics].sort((a, b) => b.risk - a.risk)[0];
+    const top = recommendPath(analyse(hist, s.diagnostic.interactions))[0];
     if (top) explain = { topic: top.topic, ...predictStruggle(featuresFor(hist, s.diagnostic.interactions, top.topic, "medium")) };
   }
 
@@ -119,7 +119,7 @@ function ModelPage() {
         </div>
       </div>
 
-      <h2 className="mt-10 mb-4 font-display text-2xl font-semibold">Why the model chose your next lesson</h2>
+      <h2 className="mt-10 mb-4 font-display text-2xl font-semibold">Model explanation for your next lesson</h2>
       {explain ? (
         <div className="rounded-2xl border border-border bg-card p-6">
           <p><b>{explain.topic}</b> — predicted struggle risk <b>{pct(explain.p)}</b> on a medium question.</p>
