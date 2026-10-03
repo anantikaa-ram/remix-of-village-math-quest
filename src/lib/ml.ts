@@ -1,4 +1,5 @@
 import type { Difficulty, DomainId, Question } from "./questions";
+import { featuresFor, predictStruggle } from "./struggle";
 
 /** One telemetry event per diagnostic item. */
 export interface Interaction {
@@ -48,8 +49,11 @@ function evidence(i: Interaction) {
   return sigmoid(z);
 }
 
-/** Bayesian-style mastery with a 0.5 prior (weight 1), IRT-like prediction. */
-export function analyse(interactions: Interaction[]) {
+/**
+ * Mastery = Bayesian-style evidence average; risk = trained logistic-regression
+ * struggle model (see struggle.ts / scripts/train_model.py) on a medium item.
+ */
+export function analyse(interactions: Interaction[], diagnostic: Interaction[] = interactions) {
   const byTopic = new Map<string, Interaction[]>();
   for (const i of interactions) {
     const k = `${i.domain}::${i.topic}`;
@@ -60,9 +64,8 @@ export function analyse(interactions: Interaction[]) {
     const sum = list.reduce((s, i) => s + evidence(i) * (1 + 0.3 * DIFF_W[i.difficulty] + 0.3), 0);
     const w = list.reduce((s, i) => s + (1 + 0.3 * DIFF_W[i.difficulty] + 0.3), 0);
     const mastery = (0.5 + sum) / (1 + w);
-    const theta = Math.log(mastery / (1 - mastery));
-    const pCorrectNext = sigmoid(1.4 * theta); // item difficulty b=0 (medium)
-    return { topic, domain, mastery, pCorrectNext, risk: 1 - pCorrectNext, n: list.length };
+    const risk = predictStruggle(featuresFor(interactions, diagnostic, topic, "medium")).p;
+    return { topic, domain, mastery, pCorrectNext: 1 - risk, risk, n: list.length };
   });
 
   const domainIds = [...new Set(interactions.map((i) => i.domain))];
