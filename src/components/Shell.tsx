@@ -13,6 +13,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </Link>
           {s ? (
             <div className="flex items-center gap-4 text-sm">
+              <Link to="/model" className="font-medium hover:text-primary" activeProps={{ className: "text-primary" }}>Model</Link>
               {s.diagnostic && <Link to="/learn" className="font-medium hover:text-primary" activeProps={{ className: "text-primary" }}>Learn</Link>}
               {s.diagnostic && <Link to="/village" className="font-medium hover:text-primary" activeProps={{ className: "text-primary" }}>Village</Link>}
               {s.diagnostic && <Link to="/results" className="font-medium hover:text-primary" activeProps={{ className: "text-primary" }}>Profile</Link>}
