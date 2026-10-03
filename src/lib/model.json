@@ -232,6 +232,24 @@
    "n": 130
   }
  ],
+ "topicBaseline": {
+  "algebra_expressions": 0.4,
+  "algebra_inequalities": 0.55,
+  "algebra_linear_equations": 0.5,
+  "algebra_quadratics": 0.65,
+  "arithmetic_decimals": 0.35,
+  "arithmetic_fractions": 0.42,
+  "arithmetic_integers": 0.3,
+  "arithmetic_percentages": 0.45,
+  "data_bar_line_graphs": 0.28,
+  "data_mean_median_mode": 0.32,
+  "data_probability": 0.52,
+  "data_scatter_plots": 0.46,
+  "geometry_angles": 0.38,
+  "geometry_area_perimeter": 0.42,
+  "geometry_coordinate": 0.52,
+  "geometry_triangles": 0.48
+ },
  "data": {
   "rows": 11667,
   "students": 600,
