@@ -45,7 +45,7 @@ export function featuresFor(history: Interaction[], diagnostic: Interaction[], t
 /** P(struggle) plus each feature's contribution to the log-odds (for explanations). */
 export function predictStruggle(f: Record<FeatureName, number>) {
   const contrib = model.features.map((name, k) => ({
-    name, value: f[name as FeatureName], logit: (model.coef[k]! * (f[name as FeatureName] - model.mean[k]!)) / model.std[k]!,
+    name, value: f[name as FeatureName], logit: ((model.coef[k] ?? 0) * (f[name as FeatureName] - (model.mean[k] ?? 0))) / (model.std[k] ?? 1),
   }));
   const z = model.intercept + contrib.reduce((s, c) => s + c.logit, 0);
   return { p: 1 / (1 + Math.exp(-z)), contrib };
