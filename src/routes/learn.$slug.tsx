@@ -2,7 +2,8 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Shell } from "@/components/Shell";
 import { saveStudent, useStudent } from "@/lib/store";
-import { analyse, recommendPath, type Interaction } from "@/lib/ml";
+import type { Interaction } from "@/lib/ml";
+import { chooseDifficulty, featuresFor, predictStruggle } from "@/lib/struggle";
 import { lessonBySlug, PRACTICE_LEN, type PracticeItem } from "@/lib/curriculum";
 import type { Difficulty } from "@/lib/questions";
 
@@ -29,8 +30,6 @@ function LessonNotFound() {
   return <Shell><p>Lesson not found. <Link to="/learn" className="text-primary underline">Back to curriculum</Link></p></Shell>;
 }
 
-const UP: Record<Difficulty, Difficulty> = { easy: "medium", medium: "hard", hard: "hard" };
-const DOWN: Record<Difficulty, Difficulty> = { easy: "easy", medium: "easy", hard: "medium" };
 
 function LessonPage() {
   const { slug } = Route.useParams();
@@ -42,8 +41,7 @@ function LessonPage() {
 
   const startDiff = useMemo<Difficulty>(() => {
     if (!s?.diagnostic) return "easy";
-    const p = recommendPath(analyse([...s.diagnostic.interactions, ...(s.practice ?? [])])).find((x) => x.topic === lesson.topic);
-    return p?.difficulty ?? "easy";
+    return chooseDifficulty([...s.diagnostic.interactions, ...(s.practice ?? [])], s.diagnostic.interactions, lesson.topic);
   }, [s, lesson.topic]);
 
   if (s === undefined) return <Shell><div /></Shell>;
@@ -85,7 +83,7 @@ function LessonPage() {
           </div>
         )}
 
-        {phase === "practice" && <Practice key={slug} startDiff={startDiff} onDone={(log) => {
+        {phase === "practice" && <Practice key={slug} startDiff={startDiff} history={[...(s.diagnostic?.interactions ?? []), ...(s.practice ?? [])]} diagnostic={s.diagnostic?.interactions ?? []} onDone={(log) => {
           const correct = log.filter((x) => x.correct && x.attempts === 1).length;
           const stars = correct >= 5 ? 3 : correct >= 4 ? 2 : correct >= 2 ? 1 : 0;
           const prev = s.lessonsDone?.[slug];
@@ -123,7 +121,7 @@ function LessonPage() {
 
 type Result = { correct: number; stars: number; xp: number; coins: number };
 
-function Practice({ startDiff, onDone, lessonSlug }: { startDiff: Difficulty; onDone: (log: Interaction[]) => void; lessonSlug: string }) {
+function Practice({ startDiff, onDone, lessonSlug, history, diagnostic }: { history: Interaction[]; diagnostic: Interaction[]; startDiff: Difficulty; onDone: (log: Interaction[]) => void; lessonSlug: string }) {
   const lesson = lessonBySlug(lessonSlug)!;
   const [diff, setDiff] = useState<Difficulty>(startDiff);
   const [item, setItem] = useState<PracticeItem>(() => lesson.gen(startDiff));
@@ -147,19 +145,23 @@ function Practice({ startDiff, onDone, lessonSlug }: { startDiff: Difficulty; on
 
   const next = () => {
     if (idx + 1 >= PRACTICE_LEN) return onDone(log);
-    // adaptive difficulty: step up on a clean first-try, step down on a miss
-    const nd = done === "right" && attempts === 1 && !hint ? UP[diff] : done === "wrong" ? DOWN[diff] : diff;
+    // ML-adaptive difficulty: hardest level the struggle model predicts is still productive
+    const nd = chooseDifficulty([...history, ...log], diagnostic, lesson.topic);
     setDiff(nd); setItem(lesson.gen(nd)); setIdx(idx + 1);
     setPicked(null); setAttempts(0); setHint(false); setDone(null); t0.current = Date.now();
   };
 
+  const risk = useMemo(() => predictStruggle(featuresFor([...history, ...log.slice(0, idx)], diagnostic, lesson.topic, diff)).p, [idx, diff]);
   const diffColor = { easy: "bg-success/15 text-success", medium: "bg-warning/20 text-warning-foreground", hard: "bg-destructive/15 text-destructive" }[diff];
 
   return (
     <div className="mt-6">
       <div className="mb-3 flex justify-between text-sm text-muted-foreground">
         <span>Question {idx + 1} of {PRACTICE_LEN}</span>
-        <span className={`rounded-full px-3 py-0.5 text-xs font-semibold uppercase ${diffColor}`}>{diff}</span>
+        <span className="flex items-center gap-2">
+          <span className="text-xs" title="Predicted by the trained struggle model">ML struggle risk {Math.round(risk * 100)}%</span>
+          <span className={`rounded-full px-3 py-0.5 text-xs font-semibold uppercase ${diffColor}`}>{diff}</span>
+        </span>
       </div>
       <div className="mb-6 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full bg-primary transition-all" style={{ width: `${(idx / PRACTICE_LEN) * 100}%` }} /></div>
       <div className="rounded-2xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">

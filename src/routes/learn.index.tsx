@@ -28,7 +28,7 @@ function Learn() {
   if (s === undefined) return <Shell><div /></Shell>;
   if (!s?.diagnostic) return <Shell><p>Take the <Link to={s ? "/diagnostic" : "/onboarding"} className="text-primary underline">diagnostic</Link> first so we can tailor your lessons.</p></Shell>;
 
-  const a = analyse(all);
+  const a = analyse(all, s.diagnostic.interactions);
   const path = recommendPath(a);
   const next = path[0];
   const done = s.lessonsDone ?? {};

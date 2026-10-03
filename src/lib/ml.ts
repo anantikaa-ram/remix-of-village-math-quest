@@ -97,17 +97,17 @@ export interface PathStep {
   reason: string;
 }
 
-/** Recommendation engine: prioritise highest struggle risk, pick difficulty from mastery. */
+/** Recommendation engine: order by ML-predicted struggle risk, pick action from mastery. */
 export function recommendPath(a: Analysis): PathStep[] {
   return [...a.topics]
     .sort((x, y) => y.risk - x.risk)
     .map((t) => {
       const pct = Math.round(t.mastery * 100);
       if (t.mastery < 0.45)
-        return { topic: t.topic, domain: t.domain, action: "Remediate", difficulty: "easy", reason: `Mastery ${pct}% — rebuild foundations with guided lessons.` };
+        return { topic: t.topic, domain: t.domain, action: "Remediate", difficulty: "easy", reason: `Mastery ${pct}% · model predicts ${Math.round(t.risk*100)}% struggle risk — rebuild foundations.` };
       if (t.mastery < 0.7)
-        return { topic: t.topic, domain: t.domain, action: "Practice", difficulty: "medium", reason: `Mastery ${pct}% — targeted practice to consolidate.` };
-      return { topic: t.topic, domain: t.domain, action: "Challenge", difficulty: "hard", reason: `Mastery ${pct}% — ready for stretch problems & boss battles.` };
+        return { topic: t.topic, domain: t.domain, action: "Practice", difficulty: "medium", reason: `Mastery ${pct}% · ${Math.round(t.risk*100)}% struggle risk — targeted practice.` };
+      return { topic: t.topic, domain: t.domain, action: "Challenge", difficulty: "hard", reason: `Mastery ${pct}% · ${Math.round(t.risk*100)}% struggle risk — ready for stretch problems.` };
     });
 }
 
