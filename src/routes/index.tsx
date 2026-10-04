@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Shell } from "@/components/Shell";
-import { useStudent } from "@/lib/store";
+import { useStudent, useAuth } from "@/lib/store";
 import { DOMAINS } from "@/lib/questions";
 
 export const Route = createFileRoute("/")({
@@ -19,7 +19,8 @@ const CYCLE = ["Onboard", "Diagnose", "Learn", "Play", "Assess", "Analyse", "Pre
 
 function Index() {
   const s = useStudent();
-  const next = !s ? "/onboarding" : s.diagnostic ? "/results" : "/diagnostic";
+  const signedIn = useAuth().status === "signedIn";
+  const next = s === null && !signedIn ? "/auth" : !s ? "/onboarding" : s.diagnostic ? "/results" : "/diagnostic";
   const label = !s ? "Found your village" : s.diagnostic ? "View my learning path" : "Take the diagnostic";
   return (
     <Shell>
