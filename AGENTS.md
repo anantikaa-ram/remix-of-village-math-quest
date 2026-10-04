@@ -9,3 +9,4 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 - Struggle prediction uses a logistic regression trained offline by scripts/train_model.py on data/student_math_learning_dataset.csv, exported to src/lib/model.json and run in the browser; why: simple, explainable, matched gradient boosting on held-out students.
+- Student progress is stored as one JSON row per user in student_profiles (Lovable Cloud, RLS own-row), loaded/saved via src/lib/store.ts; why: keeps existing Student shape while adding real accounts.

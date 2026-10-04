@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import type { DomainId } from "./questions";
 import type { Interaction } from "./ml";
 
@@ -20,32 +21,59 @@ export interface Student {
   village?: { x: number; y: number; id: string }[];
 }
 
-const KEY = "mathvillage.student";
+type AuthState = { status: "loading" | "signedOut" | "signedIn"; userId: string | null; email: string | null };
+
 const listeners = new Set<() => void>();
-let cache: Student | null | undefined;
+let auth: AuthState = { status: "loading", userId: null, email: null };
+let student: Student | null | undefined = undefined;
+let saveError: string | null = null;
+let started = false;
+const emit = () => listeners.forEach((l) => l());
 
-function read(): Student | null {
-  if (cache !== undefined) return cache;
-  try {
-    cache = JSON.parse(localStorage.getItem(KEY) ?? "null");
-  } catch {
-    cache = null;
-  }
-  return cache ?? null;
+async function loadProfile(userId: string) {
+  const { data, error } = await supabase.from("student_profiles").select("data").eq("user_id", userId).maybeSingle();
+  if (error) console.error(error);
+  student = (data?.data as unknown as Student) ?? null;
 }
 
+function start() {
+  if (started || typeof window === "undefined") return;
+  started = true;
+  const apply = async (session: { user: { id: string; email?: string } } | null) => {
+    if (!session) { auth = { status: "signedOut", userId: null, email: null }; student = null; emit(); return; }
+    if (auth.userId === session.user.id && auth.status === "signedIn") return;
+    auth = { status: "loading", userId: session.user.id, email: session.user.email ?? null }; emit();
+    await loadProfile(session.user.id);
+    auth = { ...auth, status: "signedIn" }; emit();
+  };
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "INITIAL_SESSION" || event === "USER_UPDATED") void apply(session);
+  });
+}
+
+/** Saves the student to the backend (optimistic local update). */
 export function saveStudent(s: Student | null) {
-  cache = s;
-  if (s) localStorage.setItem(KEY, JSON.stringify(s));
-  else localStorage.removeItem(KEY);
-  listeners.forEach((l) => l());
+  student = s; saveError = null; emit();
+  if (!auth.userId || !s) return;
+  void supabase.from("student_profiles").upsert({ user_id: auth.userId, data: s as never, updated_at: new Date().toISOString() })
+    .then(({ error }) => { if (error) { saveError = "Couldn't save your progress — check your connection."; console.error(error); emit(); } });
 }
 
-/** Returns undefined during SSR / before hydration, null if no student. */
+export async function signOut() {
+  await supabase.auth.signOut();
+}
+
+const subscribe = (l: () => void) => { start(); listeners.add(l); return () => listeners.delete(l); };
+
+/** Returns undefined while loading / during SSR, null if signed out or no profile yet. */
 export function useStudent(): Student | null | undefined {
-  return useSyncExternalStore(
-    (l) => (listeners.add(l), () => listeners.delete(l)),
-    read,
-    () => undefined,
-  );
+  return useSyncExternalStore(subscribe, () => (auth.status === "loading" ? undefined : student ?? null), () => undefined);
+}
+
+export function useAuth(): AuthState {
+  return useSyncExternalStore(subscribe, () => auth, () => auth);
+}
+
+export function useSaveError() {
+  return useSyncExternalStore(subscribe, () => saveError, () => null);
 }

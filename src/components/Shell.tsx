@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { useStudent } from "@/lib/store";
+import { signOut, useAuth, useSaveError, useStudent } from "@/lib/store";
 
 export function Shell({ children }: { children: ReactNode }) {
   const s = useStudent();
+  const auth = useAuth();
+  const saveErr = useSaveError();
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border bg-card/70 backdrop-blur">
@@ -20,12 +22,16 @@ export function Shell({ children }: { children: ReactNode }) {
               <span className="rounded-full bg-accent px-3 py-1 font-medium text-accent-foreground">⚡ {s.xp} XP</span>
               <span className="rounded-full bg-secondary px-3 py-1 font-medium text-secondary-foreground">🪙 {s.coins}</span>
               <span className="text-2xl" title={s.name}>{s.avatar}</span>
+              <button onClick={() => void signOut()} className="text-xs text-muted-foreground hover:text-foreground">Sign out</button>
             </div>
-          ) : (
-            <Link to="/onboarding" className="text-sm font-medium text-primary">Sign in</Link>
-          )}
+          ) : auth.status === "signedIn" ? (
+            <button onClick={() => void signOut()} className="text-sm text-muted-foreground">Sign out</button>
+          ) : auth.status === "signedOut" ? (
+            <Link to="/auth" className="text-sm font-medium text-primary">Sign in</Link>
+          ) : null}
         </div>
       </header>
+      {saveErr && <p role="alert" className="bg-destructive/10 py-2 text-center text-sm text-destructive">{saveErr}</p>}
       <main className="mx-auto max-w-6xl px-5 py-10">{children}</main>
     </div>
   );
