@@ -61,6 +61,8 @@
   --color-warning-foreground: var(--warning-foreground);
   --font-display: "Fraunces", Georgia, serif;
   --font-sans: "Outfit", system-ui, sans-serif;
+  --font-village-display: "DM Serif Display", Georgia, serif;
+  --font-village-sans: "Fira Sans", system-ui, sans-serif;
   --font-math: "STIX Two Text", "Cambria Math", serif;
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -125,6 +127,8 @@
 }
 
 @layer components {
+  .village-heading, .village-map, .village-catalog { font-family: var(--font-village-sans); }
+  .village-heading h1, .village-catalog h2 { font-family: var(--font-village-display); }
   .village-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; }
   .village-summary { display: flex; align-items: center; gap: .8rem; min-width: 19rem; border: 1px solid color-mix(in oklab, var(--village-blue) 24%, transparent); border-bottom-width: 4px; border-radius: 1rem; background: var(--card); padding: .8rem 1rem; box-shadow: var(--shadow-card); }
   .village-summary__icon { display: grid; width: 2.75rem; height: 2.75rem; place-items: center; border-radius: .75rem; background: color-mix(in oklab, var(--village-gold) 28%, var(--card)); color: var(--warning-foreground); }
