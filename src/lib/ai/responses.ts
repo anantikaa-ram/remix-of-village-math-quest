@@ -18,7 +18,7 @@ export function createResponsesCall(
   });
   const result = streamText({
     model: provider.responses(config.model),
-    instructions,
+    ...(instructions !== undefined ? { instructions } : {}),
     messages,
     abortSignal: request.signal,
     providerOptions: {
