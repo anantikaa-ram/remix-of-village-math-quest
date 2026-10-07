@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Coins, Hammer, LockKeyhole, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import { Check, Coins, Eye, Hammer, LockKeyhole, RotateCcw, Sparkles, Trash2, X } from "lucide-react";
 import { Shell } from "@/components/Shell";
 import { Button } from "@/components/ui/button";
 import { saveStudent, useStudent } from "@/lib/store";
@@ -26,6 +26,8 @@ function Village() {
   const s = useStudent();
   const [sel, setSel] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ x: number; y: number } | null>(null);
+  const [hoverPlot, setHoverPlot] = useState<{ x: number; y: number } | null>(null);
   const mastery = useMemo(() => {
     const all = [...(s?.diagnostic?.interactions ?? []), ...(s?.practice ?? [])];
     const m = new Map<string, number>();
@@ -42,6 +44,16 @@ function Village() {
   const selected = sel && sel !== "__remove" ? structureById(sel) : undefined;
   const selectedIsAffordable = selected ? s.coins >= selected.cost : false;
   const maxPlots = GRID_W * GRID_H;
+  const ghostPlot = selected ? preview ?? hoverPlot : null;
+  const clearPreview = () => { setPreview(null); setHoverPlot(null); };
+
+  const confirmPlacement = () => {
+    if (!preview || !selected || !unlocked(selected) || at(preview.x, preview.y)) return;
+    if (s.coins < selected.cost) return setMsg(`You need ${selected.cost - s.coins} more coins to build ${selected.name}.`);
+    saveStudent({ ...s, coins: s.coins - selected.cost, village: [...placed, { ...preview, id: selected.id }], badges: placed.length === 0 ? [...new Set([...s.badges, "Village Founder"])] : s.badges });
+    setMsg(`Built ${selected.name}! −${selected.cost} 🪙`);
+    clearPreview();
+  };
 
   const clickTile = (x: number, y: number) => {
     const here = at(x, y);
@@ -57,9 +69,8 @@ function Village() {
     }
     if (sel === "__remove") return setMsg("Choose a building on the map to demolish it.");
     if (!selected) return setMsg("Choose a building from the catalog first.");
-    if (s.coins < selected.cost) return setMsg(`Not enough coins — ${selected.name} costs ${selected.cost} 🪙. Practise lessons to earn more!`);
-    saveStudent({ ...s, coins: s.coins - selected.cost, village: [...placed, { x, y, id: selected.id }], badges: placed.length === 0 ? [...new Set([...s.badges, "Village Founder"])] : s.badges });
-    setMsg(`Built ${selected.name}! −${selected.cost} 🪙`);
+    setPreview({ x, y });
+    setMsg(null);
   };
 
   return (
@@ -81,15 +92,24 @@ function Village() {
       <div className="mt-7 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <section aria-label="Village map" className="min-w-0">
           <div className="village-map">
-            <div className="village-map__topbar">
+            <div className="village-map__topbar flex-wrap gap-2">
               <div>
-                <span className="village-map__eyebrow">Build mode</span>
-                <strong>{sel === "__remove" ? "Choose a building to remove" : selected ? `Placing ${selected.name}` : "Choose a building from the catalog"}</strong>
+                <span className="village-map__eyebrow">{preview ? "Placement preview · not purchased" : "Build mode"}</span>
+                <strong>{sel === "__remove" ? "Choose a building to remove" : selected ? `Previewing ${selected.name}` : "Choose a building from the catalog"}</strong>
               </div>
               {sel && (
-                <Button variant="secondary" size="sm" onClick={() => { setSel(null); setMsg(null); }}>
+                <Button variant="secondary" size="sm" onClick={() => { setSel(null); setMsg(null); clearPreview(); }}>
                   <RotateCcw aria-hidden="true" /> Cancel
                 </Button>
+              )}
+              {preview && selected && (
+                <div className="village-preview-actions" role="status">
+                  <span><Eye aria-hidden="true" /> Plot {preview.x + 1}, {preview.y + 1} · {selectedIsAffordable ? `${s.coins - selected.cost} coins after building` : `Need ${selected.cost - s.coins} more coins`}</span>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" disabled={!selectedIsAffordable} onClick={confirmPlacement}><Check aria-hidden="true" /> Build · {selected.cost} coins</Button>
+                    <Button size="sm" variant="outline" onClick={clearPreview}><X aria-hidden="true" /> Cancel preview</Button>
+                  </div>
+                </div>
               )}
             </div>
             <div className="village-terrain" aria-hidden="true">
@@ -103,11 +123,14 @@ function Village() {
             {Array.from({ length: GRID_W * GRID_H }, (_, i) => {
               const x = i % GRID_W, y = Math.floor(i / GRID_W), p = at(x, y), st = p && structureById(p.id);
                 const removalTarget = sel === "__remove" && st;
+                const isPreview = !st && selected && ghostPlot?.x === x && ghostPlot.y === y;
               return (
-                  <button key={i} aria-label={st ? `${st.name} at plot ${x + 1}, ${y + 1}` : `Empty plot ${x + 1}, ${y + 1}`} title={st?.name} onClick={() => clickTile(x, y)}
-                    className={`village-plot ${st ? "village-plot--built" : "village-plot--empty"} ${removalTarget ? "village-plot--remove" : ""}`}>
-                    {st ? <><span className="village-building" aria-hidden="true">{st.glyph}</span><span className="village-building__label">{st.name}</span></> : <span className="village-plot__plus" aria-hidden="true">+</span>}
-                  </button>
+                  <Button variant="ghost" key={i} aria-label={st ? `${st.name} at plot ${x + 1}, ${y + 1}` : `Empty plot ${x + 1}, ${y + 1}`} aria-pressed={Boolean(isPreview && preview)} title={st?.name} onClick={() => clickTile(x, y)}
+                    onMouseEnter={() => { if (!st && selected) setHoverPlot({ x, y }); }} onMouseLeave={() => setHoverPlot(null)}
+                    onFocus={() => { if (!st && selected) setHoverPlot({ x, y }); }} onBlur={() => setHoverPlot(null)}
+                    className={`village-plot h-auto p-0 ${st ? "village-plot--built" : "village-plot--empty"} ${removalTarget ? "village-plot--remove" : ""} ${isPreview ? "village-plot--preview" : ""}`}>
+                    {st ? <><span className="village-building" aria-hidden="true">{st.glyph}</span><span className="village-building__label">{st.name}</span></> : isPreview ? <><span className="village-building village-building--preview" aria-hidden="true">{selected.glyph}</span><span className="village-building__label">Preview</span></> : <span className="village-plot__plus" aria-hidden="true">+</span>}
+                  </Button>
               );
             })}
             </div>
@@ -133,7 +156,7 @@ function Village() {
           <Button
             variant={sel === "__remove" ? "destructive" : "outline"}
             className="mt-4 w-full justify-start"
-            onClick={() => { setSel(sel === "__remove" ? null : "__remove"); setMsg(sel === "__remove" ? null : "Demolish mode is on. Choose a building on the map."); }}
+            onClick={() => { clearPreview(); setSel(sel === "__remove" ? null : "__remove"); setMsg(sel === "__remove" ? null : "Demolish mode is on. Choose a building on the map."); }}
           >
             <Trash2 aria-hidden="true" /> {sel === "__remove" ? "Exit demolish mode" : "Demolish a building"}
             <span className="ml-auto text-xs opacity-75">50% refund</span>
@@ -146,7 +169,7 @@ function Village() {
                 {STRUCTURES.filter((st) => st.domain === d.id).map((st) => {
                   const ok = unlocked(st), m = Math.round((mastery.get(st.topic) ?? 0) * 100), affordable = s.coins >= st.cost;
                   return (
-                    <Button key={st.id} variant="ghost" disabled={!ok} onClick={() => { setSel(st.id); setMsg(affordable ? `Selected ${st.name}. Choose an empty plot.` : `${st.name} costs ${st.cost} coins. Keep learning to earn more.`); }}
+                    <Button key={st.id} variant="ghost" disabled={!ok} onClick={() => { clearPreview(); setSel(st.id); setMsg(affordable ? `Selected ${st.name}. Choose an empty plot.` : `${st.name} costs ${st.cost} coins. Keep learning to earn more.`); }}
                       className={`village-choice ${sel === st.id ? "village-choice--selected" : ""} ${ok && !affordable ? "village-choice--unaffordable" : ""}`}>
                       <span className={`village-choice__glyph ${ok ? "" : "village-choice__glyph--locked"}`}>{ok ? st.glyph : <LockKeyhole aria-hidden="true" />}</span>
                       <span className="village-choice__body">

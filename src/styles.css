@@ -164,6 +164,11 @@
   .village-building { filter: drop-shadow(0 4px 1px color-mix(in oklab, var(--foreground) 18%, transparent)); font-size: clamp(1.75rem, 4.8vw, 3.3rem); line-height: 1; animation: village-pop .42s ease-out; }
   .village-building__label { position: absolute; bottom: .22rem; left: 50%; max-width: 92%; transform: translateX(-50%); overflow: hidden; border-radius: .35rem; background: color-mix(in oklab, var(--card) 90%, transparent); padding: .08rem .3rem; color: var(--foreground); font-size: clamp(.42rem, .8vw, .62rem); font-weight: 700; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
   .village-plot--remove { border-color: var(--destructive); background: color-mix(in oklab, var(--destructive) 18%, var(--card)); }
+  .village-plot--preview, .village-plot--preview:hover { border-style: dashed; border-color: var(--village-blue); background: color-mix(in oklab, var(--card) 72%, transparent); box-shadow: 0 0 0 2px color-mix(in oklab, var(--village-blue) 25%, transparent); }
+  .village-building--preview { opacity: .65; animation: none; }
+  .village-preview-actions { flex-basis: 100%; gap: .6rem; border-top: 1px solid var(--border); padding-top: .6rem; }
+  .village-preview-actions > span { display: flex; align-items: center; gap: .35rem; margin-bottom: .5rem; font-size: .75rem; color: var(--village-blue); }
+  .village-preview-actions > span svg { width: 1rem; height: 1rem; flex: none; }
   .village-map__legend { position: absolute; bottom: .9rem; left: 1rem; right: 1rem; z-index: 4; display: flex; flex-wrap: wrap; align-items: center; gap: .8rem 1rem; border-radius: .7rem; background: color-mix(in oklab, var(--card) 86%, transparent); padding: .55rem .7rem; font-size: .7rem; font-weight: 600; color: var(--muted-foreground); backdrop-filter: blur(7px); }
   .village-map__legend span { display: flex; align-items: center; gap: .35rem; }
   .village-map__legend span:last-child { margin-left: auto; }
