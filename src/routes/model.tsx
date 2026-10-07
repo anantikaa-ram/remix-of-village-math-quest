@@ -26,6 +26,8 @@ const M = MODEL.metrics;
 
 function ModelPage() {
   const s = useStudent();
+  const [story, setStory] = useState<string | null>(null);
+  const [storyState, setStoryState] = useState<"idle" | "loading" | "error">("idle");
   const coefs = MODEL.features.map((f, k) => ({ f, w: MODEL.coef[k]! })).sort((a, b) => Math.abs(b.w) - Math.abs(a.w));
   const maxW = Math.max(...coefs.map((c) => Math.abs(c.w)));
   const gbi = Object.entries(MODEL.gbImportance).sort((a, b) => b[1] - a[1]);
