@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Shell } from "@/components/Shell";
+import { WhatIfSimulator } from "@/components/WhatIfSimulator";
 import { useStudent } from "@/lib/store";
 import { analyse, recommendPath } from "@/lib/ml";
+import { generateStory } from "@/lib/story.functions";
 import { FEATURE_LABEL, featuresFor, MODEL, predictStruggle } from "@/lib/struggle";
 
 export const Route = createFileRoute("/model")({
