@@ -47,7 +47,7 @@ export function WhatIfSimulator() {
             <div key={s.name} className="mb-4">
               <div className="mb-1 flex items-center justify-between text-sm">
                 <label htmlFor={`whatif-${s.name}`}>{FEATURE_LABEL[s.name]}</label>
-                <span className="font-mono text-xs text-muted-foreground">{s.format(values[s.name])}</span>
+                <span className="font-mono text-xs text-muted-foreground">{s.format(values[s.name] ?? s.min)}</span>
               </div>
               <input
                 id={`whatif-${s.name}`}
