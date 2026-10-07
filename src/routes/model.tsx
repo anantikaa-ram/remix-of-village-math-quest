@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Shell } from "@/components/Shell";
+import { WhatIfSimulator } from "@/components/WhatIfSimulator";
 import { useStudent } from "@/lib/store";
 import { analyse, recommendPath } from "@/lib/ml";
+import { generateStory } from "@/lib/story.functions";
 import { FEATURE_LABEL, featuresFor, MODEL, predictStruggle } from "@/lib/struggle";
 
 export const Route = createFileRoute("/model")({
@@ -23,17 +26,53 @@ const M = MODEL.metrics;
 
 function ModelPage() {
   const s = useStudent();
+  const [story, setStory] = useState<string | null>(null);
+  const [storyState, setStoryState] = useState<"idle" | "loading" | "error">("idle");
   const coefs = MODEL.features.map((f, k) => ({ f, w: MODEL.coef[k]! })).sort((a, b) => Math.abs(b.w) - Math.abs(a.w));
   const maxW = Math.max(...coefs.map((c) => Math.abs(c.w)));
   const gbi = Object.entries(MODEL.gbImportance).sort((a, b) => b[1] - a[1]);
   const [[tn, fp], [fn, tp]] = MODEL.confusion as [[number, number], [number, number]];
 
   let explain: { topic: string; p: number; contrib: { name: string; value: number; logit: number }[] } | null = null;
+  let analysis: ReturnType<typeof analyse> | null = null;
+  let path: ReturnType<typeof recommendPath> = [];
   if (s?.diagnostic) {
     const hist = [...s.diagnostic.interactions, ...(s.practice ?? [])];
-    const top = recommendPath(analyse(hist, s.diagnostic.interactions))[0];
+    analysis = analyse(hist, s.diagnostic.interactions);
+    path = recommendPath(analysis);
+    const top = path[0];
     if (top) explain = { topic: top.topic, ...predictStruggle(featuresFor(hist, s.diagnostic.interactions, top.topic, "medium")) };
   }
+
+  const tellStory = async () => {
+    if (!s || !analysis) return;
+    setStoryState("loading");
+    setStory(null);
+    try {
+      const byMastery = [...analysis.topics].sort((a, b) => b.mastery - a.mastery);
+      const { story: text } = await generateStory({
+        data: {
+          name: s.name,
+          villageName: s.villageName,
+          grade: s.grade,
+          xp: s.xp,
+          coins: s.coins,
+          badges: s.badges,
+          overallMastery: analysis.overall,
+          strongest: byMastery.slice(0, 3).map((t) => ({ topic: t.topic, mastery: t.mastery })),
+          weakest: byMastery.slice(-3).reverse().map((t) => ({ topic: t.topic, mastery: t.mastery, risk: t.risk })),
+          nextLesson: path[0] ? { topic: path[0].topic, action: path[0].action, reason: path[0].reason } : null,
+          buildings: s.village?.length ?? 0,
+          questionsAnswered: (s.diagnostic?.interactions.length ?? 0) + (s.practice?.length ?? 0),
+        },
+      });
+      setStory(text);
+      setStoryState("idle");
+    } catch (e) {
+      console.error(e);
+      setStoryState("error");
+    }
+  };
 
   return (
     <Shell>
