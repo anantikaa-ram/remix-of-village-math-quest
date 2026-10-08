@@ -18,16 +18,23 @@ const SLIDERS: SliderDef[] = [
   { name: "difficulty_level", min: 1, max: 3, step: 1, format: (v) => ["", "Easy", "Medium", "Hard"][v] ?? "Medium" },
   { name: "topic_historical_accuracy", min: 0, max: 1, step: 0.05, format: pct },
   { name: "recent_window_accuracy", min: 0, max: 1, step: 0.05, format: pct },
+  { name: "topic_attempts_count", min: 0, max: 5, step: 1, format: (v) => `${v}` },
   { name: "current_streak", min: 0, max: 10, step: 1, format: (v) => `${v}` },
   { name: "consecutive_errors", min: 0, max: 8, step: 1, format: (v) => `${v}` },
+  { name: "session_question_index", min: 1, max: 25, step: 1, format: (v) => `${v}` },
   { name: "hints_used", min: 0, max: 5, step: 1, format: (v) => `${v}` },
   { name: "days_since_last_practice", min: 0, max: 14, step: 1, format: (v) => `${v}d` },
+  { name: "topic_difficulty_baseline", min: 0, max: 1, step: 0.05, format: pct },
 ];
 
 function defaults(): Record<FeatureName, number> {
   const f = {} as Record<FeatureName, number>;
   MODEL.features.forEach((name, k) => {
-    f[name] = MODEL.mean[k] ?? 0;
+    const slider = SLIDERS.find((item) => item.name === name);
+    const value = MODEL.mean[k] ?? 0;
+    f[name] = slider
+      ? Math.min(slider.max, Math.max(slider.min, slider.min + Math.round((value - slider.min) / slider.step) * slider.step))
+      : value;
   });
   return f;
 }
@@ -47,9 +54,9 @@ export function WhatIfSimulator() {
         <div>
           {SLIDERS.map((s) => (
             <div key={s.name} className="mb-4">
-              <div className="mb-1 flex items-center justify-between text-sm">
+              <div className="mb-1 flex items-center justify-between gap-3 text-sm">
                 <label htmlFor={`whatif-${s.name}`}>{FEATURE_LABEL[s.name]}</label>
-                <span className="font-mono text-xs text-muted-foreground">{s.format(values[s.name] ?? s.min)}</span>
+                <span className="shrink-0 font-mono text-xs text-muted-foreground">{s.format(values[s.name] ?? s.min)}</span>
               </div>
               <input
                 id={`whatif-${s.name}`}
