@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { Sparkles } from "lucide-react";
 import { Shell } from "@/components/Shell";
 import { WhatIfSimulator } from "@/components/WhatIfSimulator";
+import { Button } from "@/components/ui/button";
 import { useStudent } from "@/lib/store";
 import { analyse, recommendPath } from "@/lib/ml";
 import { generateStory } from "@/lib/story.functions";
@@ -28,6 +30,7 @@ function ModelPage() {
   const s = useStudent();
   const [story, setStory] = useState<string | null>(null);
   const [storyState, setStoryState] = useState<"idle" | "loading" | "error">("idle");
+  const [storyError, setStoryError] = useState<string | null>(null);
   const coefs = MODEL.features.map((f, k) => ({ f, w: MODEL.coef[k]! })).sort((a, b) => Math.abs(b.w) - Math.abs(a.w));
   const maxW = Math.max(...coefs.map((c) => Math.abs(c.w)));
   const gbi = Object.entries(MODEL.gbImportance).sort((a, b) => b[1] - a[1]);
@@ -48,6 +51,7 @@ function ModelPage() {
     if (!s || !analysis) return;
     setStoryState("loading");
     setStory(null);
+    setStoryError(null);
     try {
       const byMastery = [...analysis.topics].sort((a, b) => b.mastery - a.mastery);
       const { story: text } = await generateStory({
@@ -69,7 +73,7 @@ function ModelPage() {
       setStory(text);
       setStoryState("idle");
     } catch (e) {
-      console.error(e);
+      setStoryError(e instanceof Error ? e.message : "The story request failed. Please try again.");
       setStoryState("error");
     }
   };
@@ -82,6 +86,12 @@ function ModelPage() {
         A logistic-regression classifier predicts whether a student will struggle on their next question. It sets the lesson order,
         the practice difficulty and the "struggle risk" shown during practice.
       </p>
+
+      <section className="mt-8">
+        <h2 className="mb-2 font-display text-2xl font-semibold">What-if simulator</h2>
+        <p className="mb-4 max-w-3xl text-muted-foreground">Adjust a learner signal and see how the deployed model changes its predicted struggle risk.</p>
+        <WhatIfSimulator />
+      </section>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
@@ -178,6 +188,23 @@ function ModelPage() {
       ) : (
         <p className="text-muted-foreground"><Link to={s ? "/diagnostic" : "/onboarding"} className="text-primary underline">Take the diagnostic</Link> to see a personal explanation.</p>
       )}
+
+      <section className="mt-10 border-t border-border pt-8">
+        <h2 className="font-display text-2xl font-semibold">Your learning story</h2>
+        <p className="mt-2 max-w-3xl text-muted-foreground">A short tale shaped by your progress, strongest topics, and next recommended lesson.</p>
+        {analysis ? (
+          <div className="mt-4">
+            <Button onClick={tellStory} disabled={storyState === "loading"}>
+              <Sparkles aria-hidden="true" />
+              {storyState === "loading" ? "Writing your story…" : story ? "Write another story" : "Tell my story"}
+            </Button>
+            {storyState === "error" && <p role="alert" className="mt-3 text-sm text-destructive">{storyError}</p>}
+            {story && <p className="mt-5 max-w-3xl whitespace-pre-line leading-7">{story}</p>}
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-muted-foreground">Complete the diagnostic to unlock your personalized story.</p>
+        )}
+      </section>
     </Shell>
   );
 }

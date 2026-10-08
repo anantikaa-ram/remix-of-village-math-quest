@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
+import { RotateCcw } from "lucide-react";
 import { FEATURE_LABEL, MODEL, predictStruggle, type FeatureName } from "@/lib/struggle";
+import { Button } from "@/components/ui/button";
 
 interface SliderDef {
   name: FeatureName;
@@ -13,19 +15,25 @@ const pct = (x: number) => `${Math.round(x * 100)}%`;
 
 const SLIDERS: SliderDef[] = [
   { name: "diagnostic_baseline_score", min: 0, max: 1, step: 0.05, format: pct },
-  { name: "difficulty_level", min: 1, max: 3, step: 1, format: (v) => ["", "Easy", "Medium", "Hard"][v]! },
+  { name: "difficulty_level", min: 1, max: 3, step: 1, format: (v) => ["", "Easy", "Medium", "Hard"][v] ?? "Medium" },
   { name: "topic_historical_accuracy", min: 0, max: 1, step: 0.05, format: pct },
   { name: "recent_window_accuracy", min: 0, max: 1, step: 0.05, format: pct },
+  { name: "topic_attempts_count", min: 0, max: 5, step: 1, format: (v) => `${v}` },
   { name: "current_streak", min: 0, max: 10, step: 1, format: (v) => `${v}` },
   { name: "consecutive_errors", min: 0, max: 8, step: 1, format: (v) => `${v}` },
-  { name: "hints_used", min: 0, max: 5, step: 1, format: (v) => `${v}` },
+  { name: "session_question_index", min: 1, max: 25, step: 1, format: (v) => `${v}` },
   { name: "days_since_last_practice", min: 0, max: 14, step: 1, format: (v) => `${v}d` },
+  { name: "topic_difficulty_baseline", min: 0, max: 1, step: 0.05, format: pct },
 ];
 
 function defaults(): Record<FeatureName, number> {
   const f = {} as Record<FeatureName, number>;
   MODEL.features.forEach((name, k) => {
-    f[name] = MODEL.mean[k] ?? 0;
+    const slider = SLIDERS.find((item) => item.name === name);
+    const value = MODEL.mean[k] ?? 0;
+    f[name] = slider
+      ? Math.min(slider.max, Math.max(slider.min, slider.min + Math.round((value - slider.min) / slider.step) * slider.step))
+      : value;
   });
   return f;
 }
@@ -45,9 +53,9 @@ export function WhatIfSimulator() {
         <div>
           {SLIDERS.map((s) => (
             <div key={s.name} className="mb-4">
-              <div className="mb-1 flex items-center justify-between text-sm">
+              <div className="mb-1 flex items-center justify-between gap-3 text-sm">
                 <label htmlFor={`whatif-${s.name}`}>{FEATURE_LABEL[s.name]}</label>
-                <span className="font-mono text-xs text-muted-foreground">{s.format(values[s.name] ?? s.min)}</span>
+                <span className="shrink-0 font-mono text-xs text-muted-foreground">{s.format(values[s.name] ?? s.min)}</span>
               </div>
               <input
                 id={`whatif-${s.name}`}
@@ -61,13 +69,16 @@ export function WhatIfSimulator() {
               />
             </div>
           ))}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setValues(defaults())}
-            className="mt-1 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted"
+            className="mt-1 w-fit"
           >
+            <RotateCcw aria-hidden="true" />
             Reset to average student
-          </button>
+          </Button>
         </div>
 
         <div className="flex flex-col gap-4">
