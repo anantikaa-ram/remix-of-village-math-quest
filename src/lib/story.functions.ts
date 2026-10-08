@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createResponsesCall } from "./ai/responses.ts";
 
 const inputSchema = z.object({
@@ -24,6 +25,7 @@ export type StoryInput = z.infer<typeof inputSchema>;
  * Runs on the server; the Lovable AI key never reaches the browser.
  */
 export const generateStory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data) => inputSchema.parse(data))
   .handler(async ({ data }) => {
     const apiKey = process.env["LOVABLE_API_KEY"];

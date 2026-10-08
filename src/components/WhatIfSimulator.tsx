@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
+import { RotateCcw } from "lucide-react";
 import { FEATURE_LABEL, MODEL, predictStruggle, type FeatureName } from "@/lib/struggle";
+import { Button } from "@/components/ui/button";
 
 interface SliderDef {
   name: FeatureName;
@@ -13,7 +15,7 @@ const pct = (x: number) => `${Math.round(x * 100)}%`;
 
 const SLIDERS: SliderDef[] = [
   { name: "diagnostic_baseline_score", min: 0, max: 1, step: 0.05, format: pct },
-  { name: "difficulty_level", min: 1, max: 3, step: 1, format: (v) => ["", "Easy", "Medium", "Hard"][v]! },
+  { name: "difficulty_level", min: 1, max: 3, step: 1, format: (v) => ["", "Easy", "Medium", "Hard"][v] ?? "Medium" },
   { name: "topic_historical_accuracy", min: 0, max: 1, step: 0.05, format: pct },
   { name: "recent_window_accuracy", min: 0, max: 1, step: 0.05, format: pct },
   { name: "current_streak", min: 0, max: 10, step: 1, format: (v) => `${v}` },
@@ -61,13 +63,16 @@ export function WhatIfSimulator() {
               />
             </div>
           ))}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setValues(defaults())}
-            className="mt-1 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted"
+            className="mt-1 w-fit"
           >
+            <RotateCcw aria-hidden="true" />
             Reset to average student
-          </button>
+          </Button>
         </div>
 
         <div className="flex flex-col gap-4">
