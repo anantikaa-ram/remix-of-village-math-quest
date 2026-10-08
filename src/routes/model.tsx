@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { Sparkles } from "lucide-react";
 import { Shell } from "@/components/Shell";
 import { WhatIfSimulator } from "@/components/WhatIfSimulator";
+import { Button } from "@/components/ui/button";
 import { useStudent } from "@/lib/store";
 import { analyse, recommendPath } from "@/lib/ml";
 import { generateStory } from "@/lib/story.functions";
@@ -82,6 +84,12 @@ function ModelPage() {
         A logistic-regression classifier predicts whether a student will struggle on their next question. It sets the lesson order,
         the practice difficulty and the "struggle risk" shown during practice.
       </p>
+
+      <section className="mt-8">
+        <h2 className="mb-2 font-display text-2xl font-semibold">What-if simulator</h2>
+        <p className="mb-4 max-w-3xl text-muted-foreground">Adjust a learner signal and see how the deployed model changes its predicted struggle risk.</p>
+        <WhatIfSimulator />
+      </section>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
@@ -178,6 +186,23 @@ function ModelPage() {
       ) : (
         <p className="text-muted-foreground"><Link to={s ? "/diagnostic" : "/onboarding"} className="text-primary underline">Take the diagnostic</Link> to see a personal explanation.</p>
       )}
+
+      <section className="mt-10 border-t border-border pt-8">
+        <h2 className="font-display text-2xl font-semibold">Your learning story</h2>
+        <p className="mt-2 max-w-3xl text-muted-foreground">A short tale shaped by your progress, strongest topics, and next recommended lesson.</p>
+        {analysis ? (
+          <div className="mt-4">
+            <Button onClick={tellStory} disabled={storyState === "loading"}>
+              <Sparkles aria-hidden="true" />
+              {storyState === "loading" ? "Writing your story…" : story ? "Write another story" : "Tell my story"}
+            </Button>
+            {storyState === "error" && <p role="alert" className="mt-3 text-sm text-destructive">Your story could not be created right now. Please try again shortly.</p>}
+            {story && <p className="mt-5 max-w-3xl whitespace-pre-line leading-7">{story}</p>}
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-muted-foreground">Complete the diagnostic to unlock your personalized story.</p>
+        )}
+      </section>
     </Shell>
   );
 }
