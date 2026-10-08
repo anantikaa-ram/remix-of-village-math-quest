@@ -30,6 +30,7 @@ function ModelPage() {
   const s = useStudent();
   const [story, setStory] = useState<string | null>(null);
   const [storyState, setStoryState] = useState<"idle" | "loading" | "error">("idle");
+  const [storyError, setStoryError] = useState<string | null>(null);
   const coefs = MODEL.features.map((f, k) => ({ f, w: MODEL.coef[k]! })).sort((a, b) => Math.abs(b.w) - Math.abs(a.w));
   const maxW = Math.max(...coefs.map((c) => Math.abs(c.w)));
   const gbi = Object.entries(MODEL.gbImportance).sort((a, b) => b[1] - a[1]);
@@ -50,6 +51,7 @@ function ModelPage() {
     if (!s || !analysis) return;
     setStoryState("loading");
     setStory(null);
+    setStoryError(null);
     try {
       const byMastery = [...analysis.topics].sort((a, b) => b.mastery - a.mastery);
       const { story: text } = await generateStory({
@@ -71,7 +73,7 @@ function ModelPage() {
       setStory(text);
       setStoryState("idle");
     } catch (e) {
-      console.error(e);
+      setStoryError(e instanceof Error ? e.message : "The story request failed. Please try again.");
       setStoryState("error");
     }
   };
@@ -196,7 +198,7 @@ function ModelPage() {
               <Sparkles aria-hidden="true" />
               {storyState === "loading" ? "Writing your story…" : story ? "Write another story" : "Tell my story"}
             </Button>
-            {storyState === "error" && <p role="alert" className="mt-3 text-sm text-destructive">Your story could not be created right now. Please try again shortly.</p>}
+            {storyState === "error" && <p role="alert" className="mt-3 text-sm text-destructive">{storyError}</p>}
             {story && <p className="mt-5 max-w-3xl whitespace-pre-line leading-7">{story}</p>}
           </div>
         ) : (
