@@ -22,7 +22,6 @@ const SLIDERS: SliderDef[] = [
   { name: "current_streak", min: 0, max: 10, step: 1, format: (v) => `${v}` },
   { name: "consecutive_errors", min: 0, max: 8, step: 1, format: (v) => `${v}` },
   { name: "session_question_index", min: 1, max: 25, step: 1, format: (v) => `${v}` },
-  { name: "hints_used", min: 0, max: 5, step: 1, format: (v) => `${v}` },
   { name: "days_since_last_practice", min: 0, max: 14, step: 1, format: (v) => `${v}d` },
   { name: "topic_difficulty_baseline", min: 0, max: 1, step: 0.05, format: pct },
 ];
