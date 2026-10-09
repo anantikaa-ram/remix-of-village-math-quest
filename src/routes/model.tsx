@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useStudent } from "@/lib/store";
 import { analyse, recommendPath } from "@/lib/ml";
 import { generateStory } from "@/lib/story.functions";
+import { structureById } from "@/lib/village";
 import { FEATURE_LABEL, featuresFor, MODEL, predictStruggle } from "@/lib/struggle";
 
 export const Route = createFileRoute("/model")({
@@ -54,6 +55,19 @@ function ModelPage() {
     setStoryError(null);
     try {
       const byMastery = [...analysis.topics].sort((a, b) => b.mastery - a.mastery);
+      const masteryByTopic = new Map(analysis.topics.map((topic) => [topic.topic, topic.mastery]));
+      const village = (s.village ?? []).flatMap((plot) => {
+        const structure = structureById(plot.id);
+        if (!structure) return [];
+        return [{
+          name: structure.name,
+          topic: structure.topic,
+          domain: structure.domain,
+          x: plot.x + 1,
+          y: plot.y + 1,
+          mastery: masteryByTopic.get(structure.topic) ?? 0,
+        }];
+      });
       const { story: text } = await generateStory({
         data: {
           name: s.name,
@@ -66,7 +80,7 @@ function ModelPage() {
           strongest: byMastery.slice(0, 3).map((t) => ({ topic: t.topic, mastery: t.mastery })),
           weakest: byMastery.slice(-3).reverse().map((t) => ({ topic: t.topic, mastery: t.mastery, risk: t.risk })),
           nextLesson: path[0] ? { topic: path[0].topic, action: path[0].action, reason: path[0].reason } : null,
-          buildings: s.village?.length ?? 0,
+          village,
           questionsAnswered: (s.diagnostic?.interactions.length ?? 0) + (s.practice?.length ?? 0),
         },
       });

@@ -4,3 +4,4 @@
 - [x] Add plot placement previews and explicit purchase confirmation without spending coins during preview.
 - [x] Add the What-if ML simulator to the Model page.
 - [x] Add and verify the personalized AI learning story on the Model page.
+- [x] Connect the AI learning story to each student's placed village structures and topic mastery.
