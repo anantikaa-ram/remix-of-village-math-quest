@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
+import { JoinClass } from "@/components/JoinClass";
 import { Shell } from "@/components/Shell";
 import { saveStudent, signOut, useStudent } from "@/lib/store";
 import { DOMAINS } from "@/lib/questions";
@@ -116,6 +117,7 @@ function Results() {
         </div>
       </div>
 
+      <JoinClass />
       <div className="mt-8 flex flex-wrap gap-3">
         <Link to="/learn" className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">Start my lessons →</Link>
         <button onClick={() => { const { diagnostic: _d, ...rest } = s; saveStudent(rest); nav({ to: "/diagnostic" }); }} className="rounded-lg border border-border px-5 py-2.5 text-sm font-medium">Retake diagnostic</button>

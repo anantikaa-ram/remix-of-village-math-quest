@@ -15,6 +15,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </Link>
           {s ? (
             <div className="flex items-center gap-4 text-sm">
+              <Link to="/teacher" className="font-medium hover:text-primary" activeProps={{ className: "text-primary" }}>Teacher</Link>
               <Link to="/model" className="font-medium hover:text-primary" activeProps={{ className: "text-primary" }}>Model</Link>
               {s.diagnostic && <Link to="/learn" className="font-medium hover:text-primary" activeProps={{ className: "text-primary" }}>Learn</Link>}
               {s.diagnostic && <Link to="/village" className="font-medium hover:text-primary" activeProps={{ className: "text-primary" }}>Village</Link>}
@@ -25,7 +26,7 @@ export function Shell({ children }: { children: ReactNode }) {
               <button onClick={() => void signOut()} className="text-xs text-muted-foreground hover:text-foreground">Sign out</button>
             </div>
           ) : auth.status === "signedIn" ? (
-            <button onClick={() => void signOut()} className="text-sm text-muted-foreground">Sign out</button>
+            <div className="flex items-center gap-4 text-sm"><Link to="/teacher" className="font-medium">Teacher</Link><button onClick={() => void signOut()} className="text-sm text-muted-foreground">Sign out</button></div>
           ) : auth.status === "signedOut" ? (
             <Link to="/auth" className="text-sm font-medium text-primary">Sign in</Link>
           ) : null}
