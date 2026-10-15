@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      class_members: {
+        Row: {
+          class_id: string
+          joined_at: string
+          student_id: string
+        }
+        Insert: {
+          class_id: string
+          joined_at?: string
+          student_id: string
+        }
+        Update: {
+          class_id?: string
+          joined_at?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_members_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          teacher_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          teacher_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          teacher_id?: string
+        }
+        Relationships: []
+      }
       student_profiles: {
         Row: {
           data: Json
@@ -37,7 +87,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_class_teacher: { Args: { _class: string }; Returns: boolean }
+      join_class: { Args: { _code: string }; Returns: string }
+      my_classes: {
+        Args: never
+        Returns: {
+          class_id: string
+          name: string
+        }[]
+      }
+      teaches_student: { Args: { _student: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
