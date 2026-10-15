@@ -38,6 +38,10 @@ function Results() {
 
   return (
     <Shell>
+      <div className="mb-6 flex gap-2 text-sm">
+        <span className="rounded-full bg-primary px-4 py-1.5 font-semibold text-primary-foreground">My profile</span>
+        <Link to="/profile-dashboard" className="rounded-full bg-muted px-4 py-1.5 font-semibold hover:bg-accent">Teacher dashboard →</Link>
+      </div>
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="rounded-2xl bg-primary p-7 text-primary-foreground lg:col-span-2">
           <p className="text-sm uppercase tracking-[0.2em] opacity-80">{s.avatar} {s.name} · {s.grade}</p>
