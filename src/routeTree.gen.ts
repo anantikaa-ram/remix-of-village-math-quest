@@ -15,6 +15,7 @@ import { Route as DiagnosticRouteImport } from './routes/diagnostic'
 import { Route as LearnRouteImport } from './routes/learn'
 import { Route as ModelRouteImport } from './routes/model'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as ProfileDashboardRouteImport } from './routes/profile-dashboard'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as TeacherRouteImport } from './routes/teacher'
 import { Route as VillageRouteImport } from './routes/village'
@@ -51,6 +52,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileDashboardRoute = ProfileDashboardRouteImport.update({
+  id: '/profile-dashboard',
+  path: '/profile-dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResultsRoute = ResultsRouteImport.update({
   id: '/results',
   path: '/results',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/learn': typeof LearnRouteWithChildren
   '/model': typeof ModelRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile-dashboard': typeof ProfileDashboardRoute
   '/results': typeof ResultsRoute
   '/teacher': typeof TeacherRoute
   '/village': typeof VillageRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/diagnostic': typeof DiagnosticRoute
   '/model': typeof ModelRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile-dashboard': typeof ProfileDashboardRoute
   '/results': typeof ResultsRoute
   '/teacher': typeof TeacherRoute
   '/village': typeof VillageRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/learn': typeof LearnRouteWithChildren
   '/model': typeof ModelRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile-dashboard': typeof ProfileDashboardRoute
   '/results': typeof ResultsRoute
   '/teacher': typeof TeacherRoute
   '/village': typeof VillageRoute
@@ -125,6 +134,7 @@ export interface FileRouteTypes {
     | '/learn'
     | '/model'
     | '/onboarding'
+    | '/profile-dashboard'
     | '/results'
     | '/teacher'
     | '/village'
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/diagnostic'
     | '/model'
     | '/onboarding'
+    | '/profile-dashboard'
     | '/results'
     | '/teacher'
     | '/village'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/learn'
     | '/model'
     | '/onboarding'
+    | '/profile-dashboard'
     | '/results'
     | '/teacher'
     | '/village'
@@ -164,6 +176,7 @@ export interface RootRouteChildren {
   LearnRoute: typeof LearnRouteWithChildren
   ModelRoute: typeof ModelRoute
   OnboardingRoute: typeof OnboardingRoute
+  ProfileDashboardRoute: typeof ProfileDashboardRoute
   ResultsRoute: typeof ResultsRoute
   TeacherRoute: typeof TeacherRoute
   VillageRoute: typeof VillageRoute
@@ -211,6 +224,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile-dashboard': {
+      id: '/profile-dashboard'
+      path: '/profile-dashboard'
+      fullPath: '/profile-dashboard'
+      preLoaderRoute: typeof ProfileDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/results': {
@@ -270,6 +290,7 @@ const rootRouteChildren: RootRouteChildren = {
   LearnRoute: LearnRouteWithChildren,
   ModelRoute: ModelRoute,
   OnboardingRoute: OnboardingRoute,
+  ProfileDashboardRoute: ProfileDashboardRoute,
   ResultsRoute: ResultsRoute,
   TeacherRoute: TeacherRoute,
   VillageRoute: VillageRoute,
